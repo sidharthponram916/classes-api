@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException 
 from bs4 import BeautifulSoup 
-from scrapers import scraper 
+from app.scrapers import scraper 
 
 app = FastAPI()
 
