@@ -1,5 +1,5 @@
 # UMD Course Catalog API
-This API is consistently expanding, and more endpoints will be available. 
+This is a project that pulls data from the University of Maryland's Schedule of Classes Website, built using FastAPI + BS4. The following endpoints are available, and more will be available soon, as this is constantly expanding. 
 
 **API Endpoint**
 
