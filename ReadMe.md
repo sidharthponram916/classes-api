@@ -1,14 +1,16 @@
 # UMD Course Catalog API
 This API is consistently expanding, and more endpoints will be available. 
 
-API Endpoint: `/api` 
+**API Endpoint**
 
-Query: 
+-  `/api`: Default Endpoint
 
-`?name=`: Course Name 
-`?date=`: Course Catalog Date
+**Query**
 
-## Sample API Response from `/api?name=BMGT110`
+- `?name=`: Course Name 
+- `?date=`: Course Catalog Date
+
+**Sample API Response from** `/api?name=BMGT110`
 ```
 [
   {
