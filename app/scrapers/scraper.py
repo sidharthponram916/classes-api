@@ -1,9 +1,29 @@
 from bs4 import BeautifulSoup
+import aiohttp 
+import asyncio 
 import requests
 
-def get_course_info(name, date):
-    url = f'https://app.testudo.umd.edu/soc/search?courseId={name}&sectionId=&termId={date}&_openSectionsOnly=on&creditCompare=%3E%3D&credits=0.0&courseLevelFilter=ALL&instructor=&_facetoface=on&_blended=on&_online=on&courseStartCompare=&courseStartHour=&courseStartMin=&courseStartAM=&courseEndHour=&courseEndMin=&courseEndAM=&teachingCenter=ALL&_classDay1=on&_classDay2=on&_classDay3=on&_classDay4=on&_classDay5=on'
 
+async def fetch_professor_rating(session, name): 
+    async with session.get(f'https://planetterp.com/api/v1/professor?name={name}', ssl=False) as response: 
+        if response.status == 200: 
+            data = await response.json()
+            rating = data.get("average_rating", "N/A")
+            slug = data.get("slug", "N/A")
+
+            return { "name": name, "planet_terp_rating": rating, "slug": slug}
+        else: 
+            return { "name": name, "planet_terp_rating": "N/A", "slug": "N/A"}
+
+async def fetch_all_ratings(instructor_names): 
+    async with aiohttp.ClientSession() as session: 
+        tasks = [fetch_professor_rating(session, name) for name in instructor_names]
+        results = await asyncio.gather(*tasks)
+    return { inst["name"]: inst for inst in results }
+
+
+
+def get_course_info(url):
     response = requests.get(url)
 
     if response.status_code == 200:
@@ -15,26 +35,48 @@ def get_course_info(name, date):
 
     courses = soup.find_all("div", class_="course"); 
     outputs = []
+    instructor_set = set()
+
+    for course in courses: 
+        sections_html = course.find_all("div", class_="section")
+        for section_html in sections_html: 
+            instructors = section_html.find_all("span", class_="section-instructor")
+            for instructor in instructors: 
+                instructor_name = instructor.text.strip()
+                if instructor_name: 
+                    instructor_set.add(instructor_name)
+
+    instructor_rating_map = asyncio.run(fetch_all_ratings(instructor_set))
+
     for course in courses: 
         course_id = course.find("div", class_="course-id")
         credits = course.find("span", class_="course-min-credits")
         title = course.find("span", class_="course-title")
+
         information = course.find_all("div", class_="approved-course-text"); 
         course_info = []
+
+        gen_ed = course.find_all("span", class_="course-subcategory")
+        gen_ed_flags = [g.text.strip() if g else "N/A" for g in gen_ed]
+
 
         for i in information: 
             inf = i.text.strip() if i else "N/A"
             course_info.append(inf); 
 
 
-        course_id_text = course_id.text.strip() if course_id else "N/A"
-        credits_text = credits.text.strip() if credits else "N/A"
-        title_text = title.text.strip() if title else "N/A"
+        course_id_text, credits_text, title_text = (
+            course_id.text.strip() if course_id else "N/A",
+            credits.text.strip() if credits else "N/A",
+            title.text.strip() if title else "N/A"
+        )
+
 
     # Sections 
         sections_html = course.find_all("div", class_="section")
         sections = []
 
+        section_instructors_cache = {}
         for section_html in sections_html: 
         
             section_id = section_html.find("span", class_="section-id")
@@ -43,9 +85,9 @@ def get_course_info(name, date):
 
             section_instructors = section_html.find_all("span", class_="section-instructor")
 
-            instructors = []
-            for instructor in section_instructors: 
-                instructors.append(instructor.text.strip() if instructor else "N/A")
+            instructors = [instructor_rating_map.get(instructor.text.strip(), { "name": instructor.text.strip(), "planet_terp_rating": "N/A", "slug": "N/A"}) for instructor in section_instructors]   
+            print(instructors)
+
 
             class_days = section_html.find("div", class_="class-days-container").find_all("div", class_="row")
 
@@ -79,6 +121,7 @@ def get_course_info(name, date):
         
         outputs.append({
         "id": course_id_text,
+        "flags": gen_ed_flags,
         "title": title_text, 
         "information": course_info, 
         "credits": credits_text,
@@ -86,3 +129,9 @@ def get_course_info(name, date):
         })
     
     return outputs; 
+
+def get_gen_ed_courses(url): 
+    return get_course_info(url); 
+
+
+
