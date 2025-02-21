@@ -1,5 +1,2 @@
-fastapi
-mangum 
+fastapi 
 beautifulsoup4
-aiohttp 
-asyncio
