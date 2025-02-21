@@ -4,22 +4,22 @@ import asyncio
 import requests
 
 
-async def fetch_professor_rating(session, name): 
-    async with session.get(f'https://planetterp.com/api/v1/professor?name={name}', ssl=False) as response: 
-        if response.status == 200: 
-            data = await response.json()
-            rating = data.get("average_rating", "N/A")
-            slug = data.get("slug", "N/A")
+# async def fetch_professor_rating(session, name): 
+#     async with session.get(f'https://planetterp.com/api/v1/professor?name={name}', ssl=False) as response: 
+#         if response.status == 200: 
+#             data = await response.json()
+#             rating = data.get("average_rating", "N/A")
+#             slug = data.get("slug", "N/A")
 
-            return { "name": name, "planet_terp_rating": rating, "slug": slug}
-        else: 
-            return { "name": name, "planet_terp_rating": "N/A", "slug": "N/A"}
+#             return { "name": name, "planet_terp_rating": rating, "slug": slug}
+#         else: 
+#             return { "name": name, "planet_terp_rating": "N/A", "slug": "N/A"}
 
-async def fetch_all_ratings(instructor_names): 
-    async with aiohttp.ClientSession() as session: 
-        tasks = [fetch_professor_rating(session, name) for name in instructor_names]
-        results = await asyncio.gather(*tasks)
-    return { inst["name"]: inst for inst in results }
+# async def fetch_all_ratings(instructor_names): 
+#     async with aiohttp.ClientSession() as session: 
+#         tasks = [fetch_professor_rating(session, name) for name in instructor_names]
+#         results = await asyncio.gather(*tasks)
+#     return { inst["name"]: inst for inst in results }
 
 
 
@@ -45,8 +45,6 @@ def get_course_info(url):
                 instructor_name = instructor.text.strip()
                 if instructor_name: 
                     instructor_set.add(instructor_name)
-
-    instructor_rating_map = asyncio.run(fetch_all_ratings(instructor_set))
 
     for course in courses: 
         course_id = course.find("div", class_="course-id")
@@ -85,9 +83,9 @@ def get_course_info(url):
 
             section_instructors = section_html.find_all("span", class_="section-instructor")
 
-            instructors = [instructor_rating_map.get(instructor.text.strip(), { "name": instructor.text.strip(), "planet_terp_rating": "N/A", "slug": "N/A"}) for instructor in section_instructors]   
-            print(instructors)
-
+            instructors = []
+            for instructor in section_instructors: 
+                instructors.append(instructor.text.strip() if instructor else "N/A")
 
             class_days = section_html.find("div", class_="class-days-container").find_all("div", class_="row")
 
