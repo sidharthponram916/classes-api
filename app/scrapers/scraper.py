@@ -27,7 +27,7 @@ def get_course_info(url):
     if response.status_code == 200:
         html = response.text
     else:
-        return { "message": "Failed to retrieve webpage."}
+        return { "message": "Failed to retrieve page."}
     
     soup = BeautifulSoup(html, "html.parser")
 
