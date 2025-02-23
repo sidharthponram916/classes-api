@@ -8,7 +8,7 @@ app = FastAPI()
 origins = [
         "http://localhost",
         "http://localhost:3000",
-        "https://tortuga-soc.vercel.app/"
+        "https://tortuga-soc.vercel.app"
     ]
     
 app.add_middleware(
