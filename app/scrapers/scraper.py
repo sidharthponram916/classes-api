@@ -94,15 +94,19 @@ def get_course_info(url):
                 end_time = day.find("span", class_="class-end-time")
                 building = day.find("span", class_="building-code")
                 room = day.find("span", class_="class-room")
+                message = day.find("div", class_="class-message")
+                class_type = day.find("span", class_="class-type"); 
 
                 d = { 
                     "days": section_days.text.strip() if section_days else "N/A", 
                     "start_time": start_time.text.strip() if start_time else "N/A", 
                     "end_time": end_time.text.strip() if end_time else "N/A", 
                     "building": building.text.strip() if building else "N/A", 
-                    "room": room.text.strip() if room else "N/A"
+                    "room": room.text.strip() if room else "N/A", 
+                    "message": message.text.strip() if message else "N/A", 
+                    "class_type": class_type.text.strip() if class_type else "Lecture"
                 }
-
+                
                 day_info.append(d); 
 
             section =  {
