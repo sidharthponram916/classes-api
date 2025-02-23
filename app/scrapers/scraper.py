@@ -60,6 +60,8 @@ def get_course_info(url):
             inf = i.text.strip() if i else "N/A"
             course_info.append(inf); 
 
+        course_notes = course.find_all("div", class_="course-text")[0]; 
+        course_notes_text = course_notes.text.strip() if course_notes else "N/A"
 
         course_id_text, credits_text, title_text = (
             course_id.text.strip() if course_id else "N/A",
@@ -106,7 +108,7 @@ def get_course_info(url):
                     "message": message.text.strip() if message else "N/A", 
                     "class_type": class_type.text.strip() if class_type else "Lecture"
                 }
-                
+
                 day_info.append(d); 
 
             section =  {
@@ -124,6 +126,7 @@ def get_course_info(url):
         "flags": gen_ed_flags,
         "title": title_text, 
         "information": course_info, 
+        "notes": course_notes_text,
         "credits": credits_text,
         "sections": sections
         })
